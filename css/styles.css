@@ -1,0 +1,2089 @@
+/**
+ * styles.css
+ * Faithful Madu portfolio: video editor and motion graphics.
+ *
+ * Sections (in order):
+ *   1. Design tokens
+ *   2. Base
+ *   3. Background grid
+ *   4. Buttons
+ *   5. Header, navigation and theme toggle
+ *   6. Hero
+ *   7. Hero portrait
+ *   8. Hero timeline
+ *   9. Showreel
+ *   10. Work: filters and project grid
+ *   11. About and software
+ *   12. Service icons
+ *   13. Services: "What I do"
+ *   14. Contact and footer
+ *   15. Video modal
+ *   16. Scroll reveal
+ *   17. Keyframes
+ *   18. Responsive
+ *   19. Reduced motion
+ */
+
+/* ==========================================================================
+   1. Design tokens
+   Colours, fonts and easing live here. Change a value once and it updates the whole site.
+   ========================================================================== */
+
+:root {
+  /* Colours (light theme). --c1 to --c4 are the accent colours used in the timeline and circle. */
+  --bg: #F5F6F8;
+  --surface: #fff;
+  --ink: #14171C;
+  --mute: #5E6672;
+  --line: #E1E4E9;
+  --acc: #2447F5;
+  --acc-ink: #fff;
+  --c1: #2447F5;
+  --c2: #F2552C;
+  --c3: #14171C;
+  --c4: #16A37F;
+  --gl: rgba(20,23,28,.085);
+
+  /* Typefaces: display (headings) and body */
+  --disp: 'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;
+  --body: 'Hanken Grotesk','Helvetica Neue',Arial,sans-serif;
+
+  /* Easing used by most transitions */
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+/* Dark theme fallback. theme-init.js normally sets data-theme, so this only applies if JavaScript is off. */
+@media (prefers-color-scheme:dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1013;
+    --surface: #171A1F;
+    --ink: #F1F3F6;
+    --mute: #99A1AD;
+    --line: #262A31;
+    --gl: rgba(255,255,255,.08);
+    --acc: #6B85FF;
+    --acc-ink: #0E1013;
+  }
+}
+
+/* Dark theme: applied when theme-init.js / the toggle sets data-theme="dark". */
+:root[data-theme="dark"] {
+  --bg: #0E1013;
+  --surface: #171A1F;
+  --ink: #F1F3F6;
+  --mute: #99A1AD;
+  --line: #262A31;
+  --gl: rgba(255,255,255,.08);
+  --acc: #6B85FF;
+  --acc-ink: #0E1013;
+}
+
+/* ==========================================================================
+   2. Base
+   Reset, page defaults, typography and layout helpers used everywhere.
+   ========================================================================== */
+
+/* Keeps content clear of phone notches and home bars (the page uses viewport-fit=cover). */
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top,0px);
+  padding-bottom: env(safe-area-inset-bottom,0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(env(safe-area-inset-top,0px) + 84px);
+  height: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15.5px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.wrap {
+  width: min(1180px,100% - 48px);
+  margin-inline: auto;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--disp);
+  margin: 0;
+  letter-spacing: -.03em;
+  line-height: 1.02;
+}
+
+h2 {
+  font-size: clamp(30px,4.1vw,49px);
+  font-weight: 700;
+}
+
+.sec {
+  padding: clamp(56px,7vw,96px) 0;
+}
+
+.lead {
+  color: var(--mute);
+  max-width: 52ch;
+  margin: 14px 0 0;
+  font-size: 15px;
+}
+
+body {
+  transition: background-color .4s,color .4s;
+}
+
+/* ==========================================================================
+   3. Background grid
+   The faint grid behind every section. main.js animates the glow and cells.
+   ========================================================================== */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  --mx: 60vw;
+  --my: 30vh;
+}
+
+.bg::before,
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 56px 56px;
+}
+
+.bg::before {
+  background-image: linear-gradient(var(--gl) 1px,transparent 1px),linear-gradient(90deg,var(--gl) 1px,transparent 1px);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 28%,#000 12%,transparent 85%);
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 28%,#000 12%,transparent 85%);
+}
+
+/* Accent copy of the grid, revealed only near the cursor (--mx / --my are set by main.js). */
+.bg::after {
+  background-image: linear-gradient(var(--acc) 1px,transparent 1px),linear-gradient(90deg,var(--acc) 1px,transparent 1px);
+  opacity: .55;
+  -webkit-mask-image: radial-gradient(circle 260px at var(--mx) var(--my),#000,transparent);
+  mask-image: radial-gradient(circle 260px at var(--mx) var(--my),#000,transparent);
+}
+
+/* Pulsing squares added by main.js. */
+.cell {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  background: var(--acc);
+  opacity: 0;
+  animation: cellp 6s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   4. Buttons
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+  font-size: 13.5px;
+  border: 0;
+  cursor: pointer;
+  transition: transform .3s var(--ease),background .3s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  background: var(--acc);
+  color: var(--acc-ink);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.btn.ghost:hover {
+  border-color: var(--ink);
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform .3s var(--ease);
+}
+
+.btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* ==========================================================================
+   5. Header, navigation and theme toggle
+   ========================================================================== */
+
+.nav-r {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tg {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color .3s,transform .3s var(--ease);
+}
+
+.tg:hover {
+  border-color: var(--ink);
+  transform: rotate(12deg);
+}
+
+.tg svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  transition: transform .55s var(--ease),opacity .3s;
+}
+
+.tg .sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(.4);
+}
+
+:root[data-theme="dark"] .tg .sun {
+  opacity: 1;
+  transform: none;
+}
+
+:root[data-theme="dark"] .tg .moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(.4);
+}
+
+header {
+  position: sticky;
+  top: env(safe-area-inset-top,0px);
+  z-index: 20;
+  background: color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.logo {
+  font: 700 18px var(--disp);
+  letter-spacing: -.04em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--acc);
+  display: block;
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+nav {
+  display: flex;
+  gap: 28px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--mute);
+}
+
+nav a {
+  position: relative;
+  transition: color .25s;
+}
+
+nav a:hover {
+  color: var(--ink);
+}
+
+nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--acc);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .35s var(--ease);
+}
+
+nav a:hover::after {
+  transform: scaleX(1);
+}
+
+/* Sound toggle. Reuses .tg; the icon swap is driven by data-sound="on|off" (set by main.js). */
+.tg.snd:hover {
+  transform: scale(1.06);
+}
+
+.tg.snd .s-off {
+  opacity: 0;
+  transform: scale(.4);
+}
+
+.tg.snd[data-sound="off"] .s-off {
+  opacity: 1;
+  transform: none;
+}
+
+.tg.snd[data-sound="off"] .s-on {
+  opacity: 0;
+  transform: scale(.4);
+}
+
+/* Sound waves pulse while the sound is on */
+.tg.snd[data-sound="on"] .w1 {
+  animation: wave 1.6s ease-in-out infinite;
+}
+
+.tg.snd[data-sound="on"] .w2 {
+  animation: wave 1.6s ease-in-out .35s infinite;
+}
+
+/* ==========================================================================
+   6. Hero
+   ========================================================================== */
+
+.hero {
+  padding: clamp(48px,8vw,110px) 0 clamp(40px,6vw,72px);
+}
+
+.hero h1 {
+  font-size: clamp(44px,7.6vw,100px);
+  line-height: .94;
+  font-weight: 700;
+  max-width: 12ch;
+  letter-spacing: -.04em;
+}
+
+.hero h1 span {
+  display: block;
+  overflow: hidden;
+  /* Extra room so descenders (g, p) are not clipped by overflow: hidden */
+  padding-bottom: .12em;
+  margin-bottom: -.12em;
+}
+
+/* Headline lines slide up out of a clipped container. */
+.hero h1 span b {
+  display: block;
+  font-weight: inherit;
+  transform: translateY(105%);
+  animation: rise 1s var(--ease) forwards;
+}
+
+.hero h1 span:nth-child(2) b {
+  animation-delay: .12s;
+  color: var(--mute);
+}
+
+.hero h1 span:nth-child(3) b {
+  animation-delay: .24s;
+}
+
+.hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 48px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 28px;
+}
+
+.hero-row p {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--mute);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   7. Hero portrait
+   Circle, ring and photo that animate in on page load.
+   ========================================================================== */
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.3fr .85fr;
+  gap: 24px;
+  align-items: end;
+}
+
+.hero-fig {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  max-width: 400px;
+  justify-self: end;
+  aspect-ratio: 1/1.12;
+}
+
+/* Colour circle behind the portrait. It scales in, then ::before spins the colours. */
+.disc {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%) scale(0);
+  animation: disc 1.2s var(--ease) .15s forwards;
+}
+
+.disc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,var(--c1),#7B4DFF,var(--c2),#7B4DFF,var(--c1));
+  animation: spin 16s linear infinite;
+}
+
+/* Dashed ring around the circle. */
+.ring {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0;
+  transform: translateX(-50%) scale(.8);
+  animation: ring2 1.4s var(--ease) .6s forwards;
+}
+
+.ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb,var(--ink) 30%,transparent);
+  animation: spin 30s linear infinite reverse;
+}
+
+/* Portrait: rises into place, with its bottom edge faded out. */
+.me-hero {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 96%;
+  height: auto;
+  opacity: 0;
+  transform: translate(-50%,10%);
+  animation: rise2 1.2s var(--ease) .65s forwards;
+  -webkit-mask-image: linear-gradient(180deg,#000 80%,transparent);
+  mask-image: linear-gradient(180deg,#000 80%,transparent);
+  filter: drop-shadow(0 20px 30px rgba(20,23,28,.18));
+}
+
+/* Software orbit.
+   Logos circle the head. js/main.js sets left, top, transform and opacity every frame.
+   Back logos get a lower z-index than the portrait, so they pass behind the head. */
+.hero-fig {
+  isolation: isolate; /* keeps the orbit's z-index layering inside the portrait */
+}
+
+.me-hero {
+  z-index: 2; /* above the circle and the back logos, below the front logos */
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  width: 13%; /* of the portrait width, so it scales with the portrait */
+  aspect-ratio: 1;
+  border-radius: 24%;
+  opacity: 0;
+  z-index: 1; /* behind the portrait */
+  will-change: left, top, transform, opacity;
+  filter: drop-shadow(0 10px 14px rgba(20, 23, 28, .22));
+}
+
+.orb.front {
+  z-index: 3; /* in front of the portrait (toggled by main.js) */
+}
+
+.orb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.orb.pr,
+.orb.ae {
+  overflow: hidden;
+}
+
+.orb.dv {
+  background: #233A51;
+}
+
+.orb.dv img {
+  width: 80%;
+  height: 80%;
+  margin: 10%; /* percentage margins are relative to the orb width, so this stays proportional */
+}
+
+.orb.cv {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   8. Hero timeline
+   The editing timeline. Positions and colours come from inline styles in index.html.
+   ========================================================================== */
+
+.tl {
+  margin-top: clamp(36px,6vw,64px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px 18px 20px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tl-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font: 500 12px var(--body);
+  color: var(--mute);
+  margin-bottom: 14px;
+}
+
+.tc {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+/* Timeline lanes. --g is the width of the V1 / V2 / A1 label column. */
+.lanes {
+  position: relative;
+  padding-left: var(--g);
+  --g: 46px;
+  touch-action: pan-y;
+}
+
+.ruler {
+  position: relative;
+  height: 24px;
+  margin-bottom: 6px;
+  cursor: ew-resize;
+  background: repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 3.333%) bottom/100% 6px no-repeat;
+}
+
+.ruler span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font: 500 10px var(--body);
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.ruler span:first-child {
+  transform: none;
+}
+
+.ruler span:last-child {
+  transform: translateX(-100%); /* keep the final label inside the card */
+}
+
+.ln {
+  display: grid;
+  grid-template-columns: var(--g) 1fr;
+  margin-left: calc(var(--g) * -1);
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.ln b {
+  font: 600 11px var(--body);
+  color: var(--mute);
+  letter-spacing: .02em;
+}
+
+.track {
+  position: relative;
+  height: 50px;
+  border-radius: 10px;
+  background: color-mix(in srgb,var(--line) 40%,transparent);
+  cursor: ew-resize;
+}
+
+.track.a {
+  height: 64px;
+}
+
+.clip {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 8px;
+  color: #fff;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+  transition: filter .3s;
+}
+
+.clip:hover {
+  filter: brightness(1.1);
+}
+
+.clip.v {
+  background: var(--bg-c);
+  background-image: repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 44px),linear-gradient(180deg,rgba(255,255,255,.16),transparent 55%);
+}
+
+.clip.v em {
+  position: absolute;
+  left: 10px;
+  top: 6px;
+  right: 8px;
+  font: 600 12px/1.2 var(--body);
+  font-style: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+
+.clip.v::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  background: linear-gradient(180deg,transparent,rgba(0,0,0,.22));
+}
+
+.fx {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  z-index: 1;
+  font: 700 10px var(--body);
+  background: rgba(255,255,255,.22);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.clip.au {
+  background: #0F8A6B;
+  display: flex;
+  align-items: center;
+}
+
+.wv {
+  position: absolute;
+  inset: 0;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.wv i {
+  flex: 1 1 0;
+  min-width: 1.5px;
+  max-width: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.5);
+}
+
+/* Bright copy of the waveform, clipped to the "played" part (--q is set by main.js). */
+.wv.top {
+  background: inherit;
+}
+
+.wv.top i {
+  background: #fff;
+}
+
+/* Bright copy of the waveform, clipped to the "played" part (--q is set by main.js). */
+.wv.top {
+  clip-path: inset(0 calc((1 - var(--q,0)) * 100%) 0 0);
+  background: #0F8A6B;
+}
+
+/* Playhead (positioned by main.js). */
+.head {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--c2);
+  pointer-events: none;
+  z-index: 3;
+  will-change: transform;
+}
+
+.head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 14px;
+  height: 12px;
+  background: var(--c2);
+  clip-path: polygon(0 0,100% 0,50% 100%);
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   9. Showreel
+   ========================================================================== */
+
+.reel {
+  position: relative;
+  aspect-ratio: 16/9;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(135deg,#1A2A8C,#2447F5 45%,#F2552C);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  margin-top: 36px;
+  isolation: isolate;
+}
+
+.reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%,rgba(255,255,255,.22),transparent 55%);
+  z-index: -1;
+  transition: transform 1.2s var(--ease);
+}
+
+.reel:hover::after {
+  transform: scale(1.25);
+}
+
+.play {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #fff;
+  color: #14171C;
+  display: grid;
+  place-items: center;
+  transition: transform .4s var(--ease);
+  position: relative;
+}
+
+.play::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,.6);
+  animation: ring 2.2s ease-out infinite;
+}
+
+.reel:hover .play {
+  transform: scale(1.1);
+}
+
+.play svg {
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+}
+
+.reel small {
+  position: absolute;
+  left: 22px;
+  bottom: 18px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.reel small.r {
+  left: auto;
+  right: 24px;
+  opacity: .85;
+}
+
+/* ==========================================================================
+   10. Work: filters and project grid
+   ========================================================================== */
+
+.head-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--mute);
+  font: 500 12.5px var(--body);
+  cursor: pointer;
+  transition: all .3s var(--ease);
+}
+
+.chip:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.grid {
+  align-items: start;
+  display: grid;
+  grid-template-columns: repeat(12,minmax(0,1fr)); /* minmax(0, ...) lets columns shrink instead of overflowing */
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.card {
+  display: block;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  transition: opacity .4s,transform .5s var(--ease);
+}
+
+/* Landscape card (YouTube). */
+.card.l {
+  grid-column: span 6;
+}
+
+/* Portrait card (vertical videos). */
+.card.p {
+  grid-column: span 3;
+}
+
+.card.hide {
+  display: none;
+}
+
+/* Graphics open a full-size image, not a video, so they get no play button. */
+.card.d .pbtn {
+  display: none;
+}
+
+.thumb img {
+  transition: transform .6s var(--ease);
+}
+
+.card:hover .thumb img {
+  transform: scale(1.04);
+}
+
+/* Group headings inside the grid: "Long-form", "Short-form", "Graphics" */
+.grp {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.grp:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.grp h3 {
+  font-size: 20px;
+  letter-spacing: -.02em;
+}
+
+.grp span {
+  color: var(--mute);
+  font-size: 13.5px;
+}
+
+.grp.hide {
+  display: none; /* headings are hidden while a filter is active */
+}
+
+/* Before / after pair (Long-form). Two cards with an arrow between them.
+   Red marks the raw footage, green marks the final edit. */
+.ba {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(12px, 2.2vw, 26px);
+}
+
+/* These are .card.l cards, which normally span half of the main grid. Inside .ba they take one column. */
+.ba .card {
+  grid-column: auto;
+}
+
+.ba.hide {
+  display: none; /* hidden by main.js when a filter hides both videos */
+}
+
+.ba .before {
+  --dot: #EF4444;
+}
+
+.ba .after {
+  --dot: #22C55E;
+}
+
+/* Thin coloured ring around each thumbnail */
+.ba .thumb {
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--dot) 55%, transparent);
+  transition: box-shadow .4s var(--ease);
+}
+
+.ba .card:hover .thumb {
+  box-shadow: 0 0 0 2px var(--dot);
+}
+
+/* Before looks flatter; it returns to full colour on hover */
+.ba .before .thumb img {
+  filter: saturate(.55) brightness(.95);
+  transition: filter .5s var(--ease), transform .6s var(--ease);
+}
+
+.ba .before:hover .thumb img {
+  filter: none;
+}
+
+/* "Before" / "After" badge with a glowing dot */
+.ba-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ba-tag i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 32%, transparent);
+}
+
+/* Small coloured dot in front of the caption under each video */
+.ba .meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ba .meta span::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* The arrow between the two: a circle with a red-to-green outline */
+.ba-arrow {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(90deg, #EF4444, #22C55E) border-box;
+}
+
+.ba-arrow svg {
+  width: 22px;
+  height: 22px;
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+.card.in {
+  animation: pop .5s var(--ease);
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 9/16;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--g);
+  display: grid;
+  place-items: center;
+}
+
+.card.l .thumb {
+  aspect-ratio: 16/9;
+}
+
+/* Graphics cards use a 4:5 frame. */
+.card.p.d .thumb {
+  aspect-ratio: 4/5;
+}
+
+.thumb img,
+.thumb video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,transparent 55%,rgba(0,0,0,.35));
+}
+
+.thumb .ph {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 1;
+  font: 500 11px var(--body);
+  color: rgba(255,255,255,.85);
+  background: rgba(0,0,0,.25);
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+
+/* Play button for video cards.
+   Drawn with CSS (::before) so it always shows, even after you replace the
+   gradient with your own <img>. Graphics cards (.d) open an image, so they
+   get no play button. */
+.card:not(.d) .thumb::before {
+  content: "";
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2314171C' d='M8 5l12 7-12 7z'/%3E%3C/svg%3E") center / 18px no-repeat;
+  transform: scale(.7);
+  opacity: 0;
+  transition: transform .4s var(--ease), opacity .4s var(--ease);
+}
+
+.card:not(.d):hover .thumb::before,
+.card:not(.d):focus-visible .thumb::before {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Touch screens have no hover, so keep the play button visible there. */
+@media (hover: none) {
+  .card:not(.d) .thumb::before {
+    transform: scale(1);
+    opacity: .92;
+  }
+}
+
+/* Older markup had a separate <span class="pbtn"> play button. The CSS button above replaces it. */
+.pbtn {
+  display: none;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 4px 0;
+}
+
+.meta h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.meta span {
+  color: var(--mute);
+  font-size: 12.5px;
+  white-space: nowrap;
+  padding-top: 3px;
+}
+
+/* ==========================================================================
+   11. About and software
+   ========================================================================== */
+
+.about {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: clamp(32px,6vw,96px);
+  align-items: start;
+}
+
+.about p {
+  color: var(--mute);
+  margin: 18px 0 0;
+  max-width: 56ch;
+}
+
+.about p:first-of-type {
+  margin-top: 22px;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.tools {
+  display: grid;
+  gap: 14px;
+}
+
+.tool {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 18px 20px;
+  transition: transform .4s var(--ease),border-color .3s;
+}
+
+.tool:hover {
+  transform: translateX(6px);
+  border-color: var(--ink);
+}
+
+.tool h3 {
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.tool p {
+  margin: 2px 0 0!important;
+  font-size: 13.5px!important;
+  color: var(--mute)!important;
+}
+
+/* Software logo tile. */
+.ico {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ico img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ico.pr {
+  animation: float 4s ease-in-out infinite;
+  border-radius: 14px;
+}
+
+.ico.ae {
+  animation: float 4s ease-in-out -.7s infinite;
+  border-radius: 14px;
+}
+
+.ico.dv {
+  background: #233A51;
+  padding: 6px;
+  animation: float 4s ease-in-out -1.3s infinite;
+}
+
+.ico.cv {
+  border-radius: 50%;
+  animation: float 4s ease-in-out -2.6s infinite;
+}
+
+.ico::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  left: -40%;
+  background: linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);
+  animation: shine 3.6s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   12. Service icons
+   Small animated SVG icons used in the "What I do" panels.
+   ========================================================================== */
+
+.si {
+  width: 36px;
+  height: 36px;
+  color: var(--acc);
+}
+
+.si * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cut {
+  animation: snip 1.8s ease-in-out infinite;
+}
+
+.spin {
+  animation: spin 6s linear infinite;
+}
+
+.bar {
+  animation: eq 1.1s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.curve {
+  stroke-dasharray: 80;
+  animation: draw 2.6s ease-in-out infinite;
+}
+
+.dot {
+  animation: slide 2.6s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   13. Services: "What I do"
+   Tab list on the left, detail panel on the right.
+   ========================================================================== */
+
+.sv {
+  display: grid;
+  grid-template-columns: minmax(240px,.8fr) 1.7fr;
+  gap: 20px;
+  margin-top: 44px;
+  align-items: start;
+}
+
+.sv-tabs {
+  display: grid;
+  gap: 8px;
+}
+
+.sv-tab {
+  position: relative;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: var(--mute);
+  font: inherit;
+  cursor: pointer;
+  transition: background .35s var(--ease),color .3s,border-color .3s;
+}
+
+.sv-tab b {
+  display: block;
+  font: 600 18px var(--disp);
+  letter-spacing: -.02em;
+  color: inherit;
+}
+
+.sv-tab span {
+  display: block;
+  font-size: 13.5px;
+  margin-top: 3px;
+}
+
+.sv-tab:hover {
+  color: var(--ink);
+}
+
+.sv-tab[aria-selected="true"] {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.sv-tab::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--acc);
+  transform: scaleY(0);
+  transition: transform .4s var(--ease);
+}
+
+.sv-tab[aria-selected="true"]::before {
+  transform: scaleY(1);
+}
+
+/* Hidden until main.js adds the .on class. */
+.sv-panel {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: clamp(24px,4vw,44px);
+  min-height: 380px;
+}
+
+.sv-panel.on {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  animation: pop .5s var(--ease);
+}
+
+.sv-panel::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -90px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,color-mix(in srgb,var(--acc) 20%,transparent),transparent);
+  pointer-events: none;
+}
+
+.sv-panel .si {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 22px;
+}
+
+.sv-panel h3 {
+  font-size: clamp(22px,2.6vw,30px);
+  letter-spacing: -.03em;
+}
+
+.sv-panel p {
+  margin: 12px 0 0;
+  color: var(--mute);
+  max-width: 46ch;
+}
+
+.sv-panel ul {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.sv-panel li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sv-panel li::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acc);
+}
+
+.sv-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  display: block;
+}
+
+.lg img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lg.dv {
+  background: #233A51;
+  padding: 2px;
+}
+
+.lg.cv {
+  border-radius: 50%;
+}
+
+/* Software chip: logo + name. */
+.chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  padding: 6px 13px;
+  border-radius: 99px;
+  color: var(--mute);
+}
+
+/* ==========================================================================
+   14. Contact and footer
+   ========================================================================== */
+
+.contact {
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 32px;
+  padding: clamp(40px,7vw,96px);
+  position: relative;
+  overflow: hidden;
+}
+
+.contact h2 {
+  font-size: clamp(28px,4.2vw,52px);
+  max-width: 16ch;
+}
+
+.contact p {
+  color: color-mix(in srgb,var(--bg) 65%,transparent);
+  margin: 14px 0 28px;
+  max-width: 44ch;
+  font-size: 15px;
+}
+
+/* Large email link. */
+.mail {
+  display: inline-block;
+  font: 600 clamp(19px,2.6vw,30px) var(--disp);
+  letter-spacing: -.03em;
+  border-bottom: 2px solid currentColor;
+  padding-bottom: 4px;
+  transition: color .3s,border-color .3s;
+}
+
+.mail:hover {
+  color: var(--c2);
+}
+
+.soc {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  font-weight: 500;
+  font-size: 13.5px;
+}
+
+.soc a {
+  opacity: .75;
+  transition: opacity .3s;
+}
+
+.soc a:hover {
+  opacity: 1;
+}
+
+footer {
+  padding: 28px 0 40px;
+  color: var(--mute);
+  font-size: 12.5px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   15. Video modal
+   ========================================================================== */
+
+dialog {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  width: min(960px,100% - 32px);
+  max-width: none;
+  color: #fff;
+  overflow: visible;
+}
+
+dialog::backdrop {
+  background: rgba(8,10,14,.8);
+  backdrop-filter: blur(6px);
+}
+
+dialog[open] {
+  animation: pop .4s var(--ease);
+}
+
+.vf {
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000; /* only visible for a moment while the video loads */
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+/* The "video goes here" message, shown when a card has no video link yet. */
+.vf.hint {
+  aspect-ratio: 16/9;
+  padding: 24px;
+}
+
+/* main.js wraps the player and its caption in .vwrap and sizes it to the video's own
+   shape (tall for portrait, wide for landscape), so there are no black borders. */
+.vwrap {
+  width: 100%;
+  margin-inline: auto;
+}
+
+/* Graphics: show the full image, uncropped, instead of a 16:9 player. */
+.vf.img {
+  aspect-ratio: auto;
+  background: transparent;
+  padding: 0;
+  overflow: visible;
+}
+
+.vf.img img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 78vh;
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+}
+
+/* Shown when a graphics card has no image yet. */
+.empty-art {
+  width: min(100%, 420px);
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+
+.vf iframe,
+.vf video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.vf p {
+  margin: 0;
+  color: #B8BFCA;
+  max-width: 36ch;
+}
+
+.mt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.x {
+  background: rgba(255,255,255,.14);
+  border: 0;
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font: 600 14px var(--body);
+}
+
+.x:hover {
+  background: rgba(255,255,255,.26);
+}
+
+/* ==========================================================================
+   16. Scroll reveal
+   ========================================================================== */
+
+/* Scroll reveal: hidden until main.js adds the .on class. */
+.rv {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .8s var(--ease),transform .8s var(--ease);
+}
+
+.rv.on {
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+   17. Keyframes
+   All animations are defined here.
+   ========================================================================== */
+
+@keyframes cellp {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: .11;
+  }
+}
+
+@keyframes disc {
+  to {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes ring2 {
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+
+@keyframes rise2 {
+  to {
+    opacity: 1;
+    transform: translate(-50%,0);
+  }
+}
+
+@keyframes rise {
+  to {
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(.97) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.5);
+    opacity: .5;
+  }
+}
+
+@keyframes ring {
+  0% {
+    transform: scale(.9);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes eq {
+  0%, 100% {
+    height: 25%;
+    transform: scaleY(.4);
+  }
+  50% {
+    height: 90%;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-5px) rotate(-3deg);
+  }
+}
+
+@keyframes shine {
+  0%, 60% {
+    left: -40%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes snip {
+  0%, 100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(-14deg);
+  }
+}
+
+@keyframes draw {
+  0% {
+    stroke-dashoffset: 80;
+  }
+  60%, 100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes slide {
+  0%, 100% {
+    transform: translateX(-14px);
+  }
+  50% {
+    transform: translateX(14px);
+  }
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    opacity: .3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   18. Responsive
+   Tablet and phone adjustments.
+   ========================================================================== */
+
+@media (max-width:900px) {
+  /* Work: stack the caption under the title so narrow cards never overflow */
+  .meta {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta span {
+    white-space: normal;
+    padding-top: 0;
+  }
+  /* Header */
+  nav {
+    display: none;
+  }
+  /* About */
+  .about {
+    grid-template-columns: 1fr;
+  }
+  /* Hero portrait */
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-fig {
+    justify-self: center;
+    max-width: 310px;
+    /* The head and the orbit rise above the portrait box (about 27% of its width),
+       so push the portrait down to keep them clear of the buttons above. */
+    margin-top: min(84px, 27%);
+  }
+  /* Services */
+  .sv {
+    grid-template-columns: 1fr;
+  }
+  .sv-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  .sv-tab {
+    flex: none;
+    padding: 10px 18px;
+    border-color: var(--line);
+    border-radius: 999px;
+  }
+  .sv-tab span,
+  .sv-tab::before {
+    display: none;
+  }
+  .sv-tab b {
+    font-size: 14.5px;
+  }
+  .sv-panel {
+    min-height: 0;
+  }
+  /* Work */
+  .card.l {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width:720px) {
+  /* Work: stack the before / after pair with the arrow pointing down */
+  .ba {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .ba-arrow {
+    justify-self: center;
+    width: 42px;
+    height: 42px;
+    transform: rotate(90deg);
+  }
+  .ba-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width:600px) {
+  /* Sections: tighter vertical spacing on phones */
+  .sec {
+    padding: 44px 0;
+  }
+  /* Page */
+  body {
+    font-size: 15px;
+  }
+  .wrap {
+    width: min(1180px,100% - 32px);
+  }
+  /* Work */
+  .card.p {
+    grid-column: span 6;
+  }
+  .card.l {
+    grid-column: span 12;
+  }
+  .grid {
+    gap: 14px;
+  }
+  .meta {
+    flex-direction: column; /* title above the label so narrow cards do not overflow */
+    gap: 2px;
+  }
+  .meta span {
+    white-space: normal;
+    padding-top: 0;
+  }
+  /* Showreel */
+  .play {
+    width: 72px;
+    height: 72px;
+  }
+  /* Header: make room for the extra sound button */
+  .nav-r {
+    gap: 8px;
+  }
+  .nav-r .btn {
+    padding: 9px 14px;
+    font-size: 12.5px;
+  }
+  .logo {
+    font-size: 16px;
+  }
+  .tg {
+    width: 34px;
+    height: 34px;
+  }
+  /* Timeline: shorter rows so it is less tall on phones */
+  .tl {
+    padding: 10px;
+  }
+  .lanes {
+    --g: 30px;
+  }
+  .ruler {
+    height: 18px;
+    margin-bottom: 4px;
+  }
+  .ruler span {
+    font-size: 9px;
+  }
+  .ln {
+    margin-bottom: 4px;
+  }
+  .ln b {
+    font-size: 9px;
+  }
+  .track {
+    height: 28px;
+    border-radius: 8px;
+  }
+  .track.a {
+    height: 38px;
+  }
+  .clip {
+    top: 3px;
+    bottom: 3px;
+    border-radius: 6px;
+  }
+  .clip.v em {
+    top: 4px;
+    left: 7px;
+    font-size: 10px;
+  }
+  .fx {
+    display: none;
+  }
+  .tl-top span:nth-child(2) {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   19. Reduced motion
+   Respects the device setting by switching animations off.
+   ========================================================================== */
+
+@media (prefers-reduced-motion:reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms!important;
+    animation-iteration-count: 1!important;
+    transition-duration: .01ms!important;
+    scroll-behavior: auto!important;
+  }
+  .hero h1 span b,
+  .rv {
+    transform: none;
+    opacity: 1;
+  }
+}
